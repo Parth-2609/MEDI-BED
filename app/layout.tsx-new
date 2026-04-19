@@ -1,0 +1,36 @@
+import type { Metadata } from "next";
+import { GeistSans, GeistMono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = GeistSans({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = GeistMono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "MediBed - Hospital Appointment Booking",
+  description: "Book doctor appointments securely with OTP login and SMS confirmations.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        {children}
+      </body>
+    </html>
+  );
+}
+
