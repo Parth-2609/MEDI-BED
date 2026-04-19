@@ -17,7 +17,8 @@ export default function HospitalCard({ hospital, onSelect, selected }: HospitalC
         </div>
         <div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">{hospital.name}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{hospital.city}, {hospital.state || 'India'}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{hospital.city}</p>
+
           <p className="text-sm font-semibold text-green-600">★ {hospital.rating}/5</p>
           <p className="text-xs text-gray-500 mt-1 line-clamp-2">{hospital.address}</p>
         </div>
