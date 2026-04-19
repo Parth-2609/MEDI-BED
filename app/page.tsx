@@ -3,16 +3,18 @@
 import { useEffect, useState } from 'react';
 import LoginForm from '../components/LoginForm';
 import HospitalCard from '../components/HospitalCard';
-import { Doctor } from '../types/appointment';
+import { Doctor, User } from '../types/appointment';
 import DoctorCard from '../components/DoctorCard';
 
 export default function Home() {
   const [step, setStep] = useState<'login' | 'verify-otp' | 'hospitals' | 'doctors' | 'booking' | 'confirmed'>('login');
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
+
   const [otpPhone, setOtpPhone] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [hospitals, setHospitals] = useState([]);
+  const [hospitals, setHospitals] = useState<any[]>([]);
   const [selectedHospital, setSelectedHospital] = useState('');
+
   const [doctors] = useState<Doctor[]>([
     { id: 'Dr. Rajesh Kumar', name: 'Dr. Rajesh Kumar', specialty: 'Cardiologist', availability: ['Mon-Fri 9AM-5PM'] },
     { id: 'Dr. Priya Sharma', name: 'Dr. Priya Sharma', specialty: 'Neurologist', availability: ['Tue-Thu 2PM-8PM'] },
@@ -25,8 +27,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const handleLoginSubmit = async (userData) => {
+const handleLoginSubmit = async (userData: User) => {
     setUser(userData);
+
     setOtpPhone(userData.phone);
     setStep('verify-otp');
     const res = await fetch('/api/send-otp', {
@@ -54,7 +57,8 @@ export default function Home() {
     const data = await res.json();
     setLoading(false);
     if (data.success) {
-      const hRes = await fetch(`/api/hospitals?city=${user.city}`);
+      const hRes = await fetch(`/api/hospitals?city=${user!.city}`);
+
       const hData = await hRes.json();
       setHospitals(hData.data);
       setStep('hospitals');
@@ -63,28 +67,31 @@ export default function Home() {
     }
   };
 
-  const handleHospitalSelect = (id) => {
+  const handleHospitalSelect = (id: string) => {
     setSelectedHospital(id);
     setStep('doctors');
   };
 
-  const handleDoctorSelect = (id) => {
+  const handleDoctorSelect = (id: string) => {
     setSelectedDoctor(id);
     setStep('booking');
   };
 
-  const handleBook = async (e) => {
+
+  const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setLoading(true);
     const booking = {
       ...formData,
-      patientName: user.name,
-      phone: user.phone,
-      email: user.email,
+      patientName: user!.name,
+      phone: user!.phone,
+      email: user!.email,
       doctorId: selectedDoctor,
       hospitalId: selectedHospital,
       department: doctors.find(d => d.id === selectedDoctor)?.specialty || '',
     };
+
     const res = await fetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(booking) });
     const data = await res.json();
     setLoading(false);
@@ -99,8 +106,9 @@ setStep('confirmed');
     }
   };
 
-  const selectedHospitalName = hospitals.find(h => h.id === selectedHospital)?.name || '';
-  const selectedDoctorName = doctors.find(d => d.id === selectedDoctor)?.name || '';
+  const selectedHospitalName = hospitals.find((h: any) => h.id === selectedHospital)?.name || '';
+  const selectedDoctorName = doctors.find((d: Doctor) => d.id === selectedDoctor)?.name || '';
+
 
   return (
  <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
@@ -143,34 +151,39 @@ setStep('confirmed');
           </div>
         )}
 
-        {step === 'hospitals' && (
+        {step === 'hospitals' && user && (
           <>
             <h3 className="text-2xl font-bold mb-8 text-center">Hospitals in {user.city}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl">
-              {hospitals.map(h => (
-                <HospitalCard key={h.id} hospital={h} onSelect={handleHospitalSelect} selected={selectedHospital === h.id} />
-              ))}
+              {hospitals.map((h: any) => {
+                const hospitalId = h.id || h.name || Math.random().toString();
+                return <HospitalCard key={hospitalId} hospital={h} onSelect={handleHospitalSelect} selected={selectedHospital === hospitalId} />;
+              })}
+
             </div>
           </>
         )}
+
 
         {step === 'doctors' && (
           <>
             <h3 className="text-2xl font-bold mb-8 text-center">{selectedHospitalName}</h3>
             <h4 className="text-xl mb-6 text-center">Select Doctor</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-              {doctors.map(d => (
+              {doctors.map((d: Doctor) => (
                 <DoctorCard key={d.id} doctor={d} onSelect={handleDoctorSelect} selected={selectedDoctor === d.id} />
               ))}
             </div>
           </>
         )}
 
+
         {step === 'booking' && (
           <div className="max-w-2xl w-full">
             <h3 className="text-2xl font-bold mb-6 text-center">
               Appointment with {selectedDoctorName} at {selectedHospitalName}
             </h3>
+
             <form onSubmit={handleBook} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <input type="date" min={new Date().toISOString().split('T')[0]} className="form-input" onChange={(e) => setFormData({...formData, date: e.target.value})} required />
