@@ -42,10 +42,13 @@ export default function BookingForm({ loggedPhone, onBookingSuccess }: BookingFo
       phone: loggedPhone,
       email: formData.email,
       doctorId: formData.doctorId,
+      hospitalId: 'MediBed Central',
       date: formData.date,
       time: formData.time,
       department: formData.department,
+      status: 'booked' as const,
     };
+
     const res = await fetch('/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
